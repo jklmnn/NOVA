@@ -27,6 +27,9 @@
 
 class Sm : public Kobject, public Refcount, public Queue<Ec>, public Queue<Si>, public Si
 {
+    public:
+        static unsigned counting;
+
     private:
         mword counter;
 
@@ -58,6 +61,8 @@ class Sm : public Kobject, public Refcount, public Queue<Ec>, public Queue<Si>, 
         {
             while (!counter)
                 up (Ec::sys_finish<Sys_regs::BAD_CAP, true>);
+
+            Atomic::sub (counting, 1U);
         }
 
         ALWAYS_INLINE
@@ -144,6 +149,24 @@ class Sm : public Kobject, public Refcount, public Queue<Ec>, public Queue<Si>, 
                 /* enqueued ? - drop our ref and add to rcu if necessary */
                 if (del_rcu())
                     Rcu::call (this);
+        }
+
+        ALWAYS_INLINE
+        inline unsigned blocked_ecs()
+        {
+            Lock_guard <Spinlock> guard (lock);
+            return Queue<Ec>::count();
+        }
+
+        ALWAYS_INLINE
+        inline unsigned blocked_scs()
+        {
+            Lock_guard <Spinlock> guard (lock);
+
+            if (Queue<Ec>::head())
+                return Queue<Ec>::head()->count();
+            else
+                return 0;
         }
 
         ALWAYS_INLINE

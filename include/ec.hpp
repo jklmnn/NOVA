@@ -68,6 +68,10 @@ class Ec : public Kobject, public Refcount, public Queue<Sc>
         Sm *         xcpu_sm;
         Pt *         pt_oom;
 
+    public:
+        static unsigned counting;
+    private:
+
         static Slab_cache cache;
 
         REGPARM (1)

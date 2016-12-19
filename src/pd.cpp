@@ -48,6 +48,8 @@ Pd::Pd (Pd *own) : Kobject (PD, static_cast<Space_obj *>(own))
 
     // I/O Ports
     Space_pio::addreg (own->quota, 0, 1UL << 16, 7);
+
+    Atomic::add (counting, 1U);
 }
 
 Pd::Pd (Pd *own, mword sel, mword a) : Kobject (PD, static_cast<Space_obj *>(own), sel, a, free, pre_free)
@@ -56,6 +58,8 @@ Pd::Pd (Pd *own, mword sel, mword a) : Kobject (PD, static_cast<Space_obj *>(own
         bool res = Quota::init.transfer_to(quota, Quota::init.limit());
         assert(res);
     }
+
+    Atomic::add (counting, 1U);
 }
 
 template <typename S>
@@ -390,8 +394,13 @@ void Pd::xfer_items (Pd *src, Crd xlt, Crd del, Xfer *s, Xfer *d, unsigned long 
     }
 }
 
+#include <sm.hpp>
+unsigned Pd::counting;
+
 Pd::~Pd()
 {
+    Atomic::sub (counting, 1U);
+
     pre_free(this);
 
     Space_mem::hpt.clear(quota, Space_mem::hpt.dest_hpt, Space_mem::hpt.iter_hpt_lev);
@@ -400,6 +409,8 @@ Pd::~Pd()
     for (unsigned cpu = 0; cpu < NUM_CPU; cpu++)
         if (Hip::cpu_online (cpu))
             Space_mem::loc[cpu].clear(quota, Space_mem::hpt.dest_loc, Space_mem::hpt.iter_loc_lev);
+
+    trace (0, "counters Pd:Ec:SM %u:%u:%u", Pd::counting, Ec::counting, Sm::counting);
 }
 
 extern "C" int __cxa_atexit(void (*)(void *), void *, void *) { return 0; }

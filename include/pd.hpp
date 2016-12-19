@@ -30,6 +30,9 @@ class Pd : public Kobject, public Refcount, public Space_mem, public Space_pio, 
 {
     private:
         static Slab_cache cache;
+    public:
+        static unsigned counting;
+    private:
 
         WARN_UNUSED_RESULT
         mword clamp (mword,   mword &, mword, mword);

@@ -68,4 +68,22 @@ class Queue
 
             return true;
         }
+
+        ALWAYS_INLINE
+        inline unsigned count()
+        {
+            T * t = headptr;
+
+            if (!t)
+                return 0;
+
+            unsigned i = 1;
+
+            while (t->next != headptr) {
+                i++;
+                t = t->next;
+            }
+
+            return i;
+        }
 };
