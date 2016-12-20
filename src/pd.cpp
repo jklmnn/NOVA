@@ -410,6 +410,7 @@ Pd::~Pd()
         if (Hip::cpu_online (cpu))
             Space_mem::loc[cpu].clear(quota, Space_mem::hpt.dest_loc, Space_mem::hpt.iter_loc_lev);
 
+    if (Pd::counting < 20)
     trace (0, "counters Pd:Ec:SM %u:%u:%u", Pd::counting, Ec::counting, Sm::counting);
 }
 
