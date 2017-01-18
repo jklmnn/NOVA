@@ -33,10 +33,16 @@ PHDRS
 {
     init    PT_LOAD;
     kern    PT_LOAD;
+    reserve PT_LOAD FLAGS(7);
 }
 
 SECTIONS
 {
+    .cpu_ap AP_BOOT_PADDR :
+    {
+    . += 4K;
+    } : reserve
+
     .init LOAD_ADDR :
     {
         *(.init)
