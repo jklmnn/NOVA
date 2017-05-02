@@ -52,6 +52,17 @@ class Hip_mem
         uint32  aux;
 };
 
+class Hip_fb
+{
+    public:
+        uint64 addr;
+        uint32 pitch;
+        uint32 width;
+        uint32 height;
+        uint8 bpp;
+        uint8 type;
+};
+
 class Hip
 {
     private:

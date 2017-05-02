@@ -23,6 +23,7 @@
 namespace Multiboot2
 {
     class Header;
+    class Framebuffer;
     class Memory_map;
     class Module;
     class Tag;
@@ -33,6 +34,7 @@ namespace Multiboot2
         TAG_CMDLINE = 1,
         TAG_MODULE  = 3,
         TAG_MEMORY  = 6,
+        TAG_FRAMEBUFFER = 8,
         TAG_ACPI_2  = 15,
     };
 
@@ -61,6 +63,14 @@ class Multiboot2::Tag
                 return nullptr;
 
             return reinterpret_cast<const char *>(this + 1);
+        }
+
+        inline Framebuffer const * framebuffer() const
+        {
+            if (type != TAG_FRAMEBUFFER)
+                return nullptr;
+
+            return reinterpret_cast<Framebuffer *>(reinterpret_cast<mword>(this + 1));
         }
 
         inline Module const * module() const
@@ -99,6 +109,18 @@ class Multiboot2::Module
         uint32 s_addr;
         uint32 e_addr;
         char string [0];
+};
+
+class Multiboot2::Framebuffer
+{
+    public:
+
+        uint64 framebuffer_addr;
+        uint32 framebuffer_pitch;
+        uint32 framebuffer_width;
+        uint32 framebuffer_height;
+        uint8 framebuffer_bpp;
+        uint8 framebuffer_type;
 };
 
 class Multiboot2::Header : public Tag
