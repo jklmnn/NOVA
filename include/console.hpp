@@ -46,6 +46,7 @@ class Console
         void print_num (uint64, unsigned, unsigned, unsigned);
         void print_str (char const *, unsigned, unsigned);
 
+
         FORMAT (2,0)
         void vprintf (char const *, va_list);
 
@@ -62,4 +63,19 @@ class Console
 
         FORMAT (1,2) NORETURN
         static void panic (char const *, ...);
+
+        template <typename T>
+        static inline  void dump_bytes(char dst[], size_t num_bytes, T const * data)
+        {    
+            const uint8 *bytes = reinterpret_cast<const uint8*>(data);
+            size_t i = 0;
+            for(; i < num_bytes; i++){
+                uint8 upper = (bytes[i] & 0xf0) >> 4;
+                uint8 lower = bytes[i] & 0x0f;
+                dst[i*3] = static_cast<char>((upper < 10) ? upper + 0x30 : upper + 0x57);
+                dst[i*3 + 1] = static_cast<char>((lower < 10) ? lower + 0x30 : lower + 0x57);
+                dst[i*3 + 2] = 0x20;
+            }
+            dst[(i-1) * 3 + 2] = '\0';
+        }
 };
