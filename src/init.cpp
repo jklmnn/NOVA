@@ -67,6 +67,15 @@ void init (mword magic, mword mbi)
 
     // Now we're ready to talk to the world
     Console::print ("\fNOVA Microhypervisor v%d-%07lx (%s): %s %s [%s] [%s]\n", CFG_VER, reinterpret_cast<mword>(&GIT_VER), ARCH, __DATE__, __TIME__, COMPILER_STRING, magic == Multiboot::MAGIC ? "MBI" : (magic==Multiboot2::MAGIC ? "MBI2" : ""));
+    
+    if(magic==Multiboot2::MAGIC){
+        Hip_fb *fb = Hip::framebuffer();
+        Console::print("Multiboot2 framebuffer: %ux%u width depth %u bpp of type %u\n",
+                fb->width,
+                fb->height,
+                fb->bpp,
+                fb->type);
+    }
 
     Idt::build();
     Gsi::setup();

@@ -113,6 +113,11 @@ void Hip::build_mbi2(Hip_mem *&mem, mword addr)
     });
 }
 
+Hip_fb *Hip::framebuffer()
+{
+    return &Hip::hip()->fb_desc;
+}
+
 template <typename T>
 void Hip::add_mod(Hip_mem *&mem, T const * mod, uint32 aux)
 {

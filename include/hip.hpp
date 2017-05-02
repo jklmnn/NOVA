@@ -132,6 +132,8 @@ class Hip
         INIT
         static void build_mbi2 (Hip_mem *&, mword);
 
+        static Hip_fb *framebuffer();
+        
         template <typename T>
         INIT
         static void add_mem (Hip_mem *&, T const *);
