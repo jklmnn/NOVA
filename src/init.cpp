@@ -32,6 +32,7 @@
 #include "multiboot2.hpp"
 
 extern "C" INIT
+
 mword kern_ptab_setup()
 {
     Hptp hpt;
@@ -61,27 +62,71 @@ void init (mword magic, mword mbi)
 
     for (void (**func)() = &CTORS_G; func != &CTORS_E; (*func++)()) ;
 
-    Hip::build (magic, mbi);
+    Hip *hip = Hip::build (magic, mbi);
 
     for (void (**func)() = &CTORS_C; func != &CTORS_G; (*func++)()) ;
 
     // Now we're ready to talk to the world
     Console::print ("\fNOVA Microhypervisor v%d-%07lx (%s): %s %s [%s] [%s]\n", CFG_VER, reinterpret_cast<mword>(&GIT_VER), ARCH, __DATE__, __TIME__, COMPILER_STRING, magic == Multiboot::MAGIC ? "MBI" : (magic==Multiboot2::MAGIC ? "MBI2" : ""));
     
-    if(magic==Multiboot2::MAGIC){
-        Hip_fb *fb = Hip::framebuffer();
-        Console::print("Multiboot2 framebuffer: %ux%u width depth %u bpp of type %u\n",
+    if(magic==Multiboot2::MAGIC)
+    {
+        Hip_fb *fb = &hip->fb_desc;
+        Console::print("Multiboot2 framebuffer [%u]: %ux%u width depth %u bpp of type %u on %p\n",
+                fb->is,
                 fb->width,
                 fb->height,
                 fb->bpp,
-                fb->type);
+                fb->type,
+                (void*)fb->addr);
+        
+        Console::print("Tags: %u %u %u %u %u %u %u %u %u %u %u %u %u %u %u %u %u %u %u\n",
+                Hip::tags2[1],
+                Hip::tags2[2],
+                Hip::tags2[3],
+                Hip::tags2[4],
+                Hip::tags2[5],
+                Hip::tags2[6],
+                Hip::tags2[7],
+                Hip::tags2[8],
+                Hip::tags2[9],
+                Hip::tags2[10],
+                Hip::tags2[11],
+                Hip::tags2[12],
+                Hip::tags2[13],
+                Hip::tags2[14],
+                Hip::tags2[15],
+                Hip::tags2[16],
+                Hip::tags2[17],
+                Hip::tags2[18],
+                Hip::tags2[19]
+                );
+        Multiboot2::Header const *mbh = reinterpret_cast<const Multiboot2::Header *>(Hip::tags[19]);
+    
+        char buf[8 * 3];
+        Console::dump_bytes(buf, 8, mbh);
+
+        Console::print("Header (%u): %s\n", mbh->type, buf);
+
+        Console::print("Memory map:\nAddr: %llu\nSize: %llu\nType: %u\n", debug.mem_addr, debug.mem_len, debug.mem_type);
+
+        Console::print("Module:\nType: %u\nSize: %u\nAddr: %p\n", debug.type, debug.size, debug.tag);
+
+        Console::print("Cmd line: %s\nType: %u\nSize: %u\nAddr: %p\n", debug.cmd_addr, debug.cmd_type, debug.cmd_size, debug.cmd_addr);
+        char cmd_buf[debug.cmd_size];
+        Console::dump_bytes(cmd_buf, 10, debug.cmd_addr);
+        Console::print("Cmdline: %s\n", cmd_buf);
+
     }
+     
 
     Idt::build();
     Gsi::setup();
     Acpi::setup();
 
     Console_vga::con.setup();
+
+    Console_vga::print("test vga\n");
 
     Keyb::init();
 }

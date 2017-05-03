@@ -55,6 +55,7 @@ class Hip_mem
 class Hip_fb
 {
     public:
+        uint32 is;
         uint64 addr;
         uint32 pitch;
         uint32 width;
@@ -62,6 +63,22 @@ class Hip_fb
         uint8 bpp;
         uint8 type;
 };
+
+class Debug
+{
+    public:
+        uint32 type;
+        uint32 size;
+        void *tag;
+        uint64 mem_addr;
+        uint64 mem_len;
+        uint32 mem_type;
+        uint32 cmd_type;
+        uint32 cmd_size;
+        char *cmd_addr;
+};
+
+extern Debug debug;
 
 class Hip
 {
@@ -83,11 +100,14 @@ class Hip
         uint32  cfg_utcb;               // 0x2c
         uint32  freq_tsc;               // 0x30
         uint32  reserved;               // 0x34
-        Hip_fb  fb_desc;
         Hip_cpu cpu_desc[NUM_CPU];
-        Hip_mem mem_desc[];
 
     public:
+        Hip_fb  fb_desc;
+        static uint32 tag;
+        static void* tags[20];
+        static uint32 tags2[20];
+        Hip_mem mem_desc[];
         enum Feature {
             FEAT_IOMMU  = 1U << 0,
             FEAT_VMX    = 1U << 1,
@@ -124,7 +144,7 @@ class Hip
         }
 
         INIT
-        static void build (mword, mword);
+        static Hip *build (mword, mword);
 
         INIT
         static void build_mbi1 (Hip_mem *&, mword);

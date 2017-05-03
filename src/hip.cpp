@@ -34,7 +34,13 @@
 mword Hip::root_addr;
 mword Hip::root_size;
 
-void Hip::build (mword magic, mword addr)
+uint32 Hip::tag = 0;
+void* Hip::tags[20];
+uint32 Hip::tags2[20];
+
+Debug debug;
+
+Hip *Hip::build (mword magic, mword addr)
 {
     Hip *h = hip();
 
@@ -63,6 +69,8 @@ void Hip::build (mword magic, mword addr)
     add_mhv (mem);
 
     h->length = static_cast<uint16>(reinterpret_cast<mword>(mem) - reinterpret_cast<mword>(h));
+
+    return h;
 }
 
 void Hip::build_mbi1(Hip_mem *&mem, mword addr)
@@ -94,10 +102,13 @@ void Hip::build_mbi1(Hip_mem *&mem, mword addr)
 void Hip::build_mbi2(Hip_mem *&mem, mword addr)
 {
     Multiboot2::Header const *mbi = static_cast<Multiboot2::Header const *>(Hpt::remap (Pd::kern.quota, addr));
-
     mbi->for_each_tag([&](Multiboot2::Tag const * tag) {
-        if (tag->type == Multiboot2::TAG_CMDLINE)
+        if (tag->type == Multiboot2::TAG_CMDLINE){
             Cmdline::init (tag->cmdline());
+            debug.cmd_type = tag->type;
+            debug.cmd_size = tag->size;
+            debug.cmd_addr = const_cast<char *>(tag->cmdline());
+        }
 
         if (tag->type == Multiboot2::TAG_MEMORY)
             tag->for_each_mem([&] (Multiboot2::Memory_map const * mmap) { Hip::add_mem(mem, mmap); });
@@ -110,7 +121,11 @@ void Hip::build_mbi2(Hip_mem *&mem, mword addr)
 
         if (tag->type == Multiboot2::TAG_FRAMEBUFFER)
             Hip::add_fb(tag->framebuffer());
-    });
+        
+        Hip::tags2[Hip::tag] = tag->type;
+        Hip::tags[++Hip::tag] = const_cast<void*>(reinterpret_cast<const void*>(tag));
+    }); 
+    Hip::tags[19] = const_cast<void*>(reinterpret_cast<const void*>(mbi));
 }
 
 Hip_fb *Hip::framebuffer()
@@ -140,6 +155,9 @@ void Hip::add_mem (Hip_mem *&mem, T const *map)
     mem->size = map->len;
     mem->type = map->type;
     mem->aux  = 0;
+    debug.mem_addr = mem->addr;
+    debug.mem_len = mem->size;
+    debug.mem_type = mem->type;
     mem++;
 }
 
@@ -147,6 +165,7 @@ template<typename T>
 void Hip::add_fb (T const *mb2_fb)
 {
     Hip_fb *fb = &hip()->fb_desc;
+    fb->is = 2;
     fb->addr = mb2_fb->framebuffer_addr;
     fb->pitch = mb2_fb->framebuffer_pitch;
     fb->width = mb2_fb->framebuffer_width;

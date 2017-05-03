@@ -19,6 +19,7 @@
 
 #include "compiler.hpp"
 #include "bits.hpp"
+#include "hip.hpp"
 
 namespace Multiboot2
 {
@@ -27,6 +28,7 @@ namespace Multiboot2
     class Memory_map;
     class Module;
     class Tag;
+    class Debug;
 
     enum {
         MAGIC       = 0x36d76289,
@@ -67,8 +69,9 @@ class Multiboot2::Tag
 
         inline Framebuffer const * framebuffer() const
         {
-            if (type != TAG_FRAMEBUFFER)
+            if (type != TAG_FRAMEBUFFER){
                 return nullptr;
+            }
 
             return reinterpret_cast<Framebuffer *>(reinterpret_cast<mword>(this + 1));
         }
@@ -77,7 +80,9 @@ class Multiboot2::Tag
         {
             if (type != TAG_MODULE)
                 return nullptr;
-
+            debug.type = type;
+            debug.size = size;
+            debug.tag = reinterpret_cast<void *>(reinterpret_cast<mword>(this));
             return reinterpret_cast<Module *>(reinterpret_cast<mword>(this + 1));
         }
 
@@ -141,5 +146,10 @@ class Multiboot2::Header : public Tag
                  fn(i);
                  i = reinterpret_cast<Tag const *>(reinterpret_cast<mword>(i) + align_up(i->size, sizeof(Tag)));
             }
+        }
+
+        inline Tag const * header()
+        {
+            return this;
         }
 };
