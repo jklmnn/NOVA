@@ -108,16 +108,23 @@ void Hip::build_mbi2(Hip_mem *&mem, mword addr)
         if (tag->type == Multiboot2::TAG_ACPI_2)
             Acpi_rsdp::parse(tag->rsdp());
 
-        if (tag->type == Multiboot2::TAG_FRAMEBUFFER){
-            const Multiboot2::Framebuffer *fb = tag->framebuffer();
-            Console::print("Width: %u\nHeight: %u\nBPP: %u\nType: %u\n",
-                    fb->framebuffer_width,
-                    fb->framebuffer_height,
-                    fb->framebuffer_bpp,
-                    fb->framebuffer_type);
-            }
+        if (tag->type == Multiboot2::TAG_FRAMEBUFFER)
+            Hip::add_fb(tag->framebuffer());
     });
 }
+
+template <typename T>
+void Hip::add_fb(T const *fb)
+{
+    Hip_fb *hfb = &hip()->fb_desc;
+    hfb->addr = fb->framebuffer_addr;
+    hfb->pitch = fb->framebuffer_pitch;
+    hfb->width = fb->framebuffer_width;
+    hfb->height = fb->framebuffer_height;
+    hfb->bpp = fb->framebuffer_bpp;
+    hfb->type = fb->framebuffer_type;
+}
+
 
 template <typename T>
 void Hip::add_mod(Hip_mem *&mem, T const * mod, uint32 aux)
