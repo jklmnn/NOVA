@@ -22,6 +22,10 @@
 
 namespace Multiboot2
 {
+    class Color_info;
+    class Color_info_ega;
+    class Color_info_indexed;
+    class Color_info_rgb;
     class Header;
     class Framebuffer;
     class Memory_map;
@@ -111,6 +115,30 @@ class Multiboot2::Module
         char string [0];
 };
 
+class Multiboot2::Color_info{};
+
+class Multiboot2::Color_info_indexed : public Color_info
+{
+    uint32 framebuffer_palette_num_colors;
+    struct {
+        uint8 red_value;
+        uint8 green_value;
+        uint8 blue_value;
+    } framebuffer_palette[];
+};
+
+class Multiboot2::Color_info_rgb : public Color_info
+{
+    uint8 framebuffer_red_field_position;
+    uint8 framebuffer_red_mask_size;
+    uint8 framebuffer_green_field_position;
+    uint8 framebuffer_green_mask_size;
+    uint8 framebuffer_blue_field_position;
+    uint8 framebuffer_blue_mask_size;
+};
+
+class Multiboot2::Color_info_ega : public Color_info{};
+
 class Multiboot2::Framebuffer
 {
     public:
@@ -121,6 +149,8 @@ class Multiboot2::Framebuffer
         uint32 framebuffer_height;
         uint8 framebuffer_bpp;
         uint8 framebuffer_type;
+        uint8 reserved;
+        Multiboot2::Color_info color_info;
 };
 
 class Multiboot2::Header : public Tag
