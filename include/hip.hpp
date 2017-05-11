@@ -43,24 +43,14 @@ class Hip_mem
             HYPERVISOR  = -1u,
             MB_MODULE   = -2u,
             ACPI_RSDT   = -3u,
-            ACPI_XSDT   = -4u
+            ACPI_XSDT   = -4u,
+            MB2_FB      = -5u
         };
 
         uint64  addr;
         uint64  size;
         uint32  type;
         uint32  aux;
-};
-
-class Hip_fb
-{
-    public:
-        uint64 addr;
-        uint32 pitch;
-        uint32 width;
-        uint32 height;
-        uint8 bpp;
-        uint8 type;
 };
 
 class Hip
@@ -83,7 +73,6 @@ class Hip
         uint32  cfg_utcb;               // 0x2c
         uint32  freq_tsc;               // 0x30
         uint32  reserved;               // 0x34
-        Hip_fb  fb_desc;
         Hip_cpu cpu_desc[NUM_CPU];
         Hip_mem mem_desc[];
 
@@ -134,7 +123,7 @@ class Hip
         
         template <typename T>
         INIT
-        static void add_fb (T const *);
+        static void add_fb (Hip_mem *&, T const *);
 
         template <typename T>
         INIT
@@ -149,15 +138,4 @@ class Hip
 
         static void add_cpu();
         static void add_check();
-
-        static inline void get_fb_desc(Hip_fb *pub)
-        {
-            Hip_fb *priv = &Hip::hip()->fb_desc;
-            pub->addr = priv->addr;
-            pub->pitch = priv->pitch;
-            pub->width = priv->width;
-            pub->height = priv->height;
-            pub->bpp = priv->bpp;
-            pub->type = priv->type;
-        }
 };

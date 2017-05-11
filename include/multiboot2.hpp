@@ -150,7 +150,7 @@ class Multiboot2::Framebuffer
         uint8 framebuffer_bpp;
         uint8 framebuffer_type;
         uint8 reserved;
-        Multiboot2::Color_info color_info;
+ //       Multiboot2::Color_info color_info;
 };
 
 class Multiboot2::Header : public Tag
